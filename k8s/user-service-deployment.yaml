@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+data:
+  DB_HOST: postgres-service
+  DB_PORT: "5432"
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  DB_NAME: user_db
+  GRPC_PORT: "50051"
+  HTTP_PORT: "8081"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+      - name: user-service
+        image: todo-user-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 50051
+          name: grpc
+        - containerPort: 8081
+          name: http
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: DB_NAME
+        - name: GRPC_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: GRPC_PORT
+        - name: HTTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: user-service-config
+              key: HTTP_PORT
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user-service
+  ports:
+  - port: 50051
+    targetPort: 50051
+    name: grpc
+  - port: 8081
+    targetPort: 8081
+    name: http
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service-http
+spec:
+  selector:
+    app: user-service
+  ports:
+  - port: 8081
+    targetPort: 8081
+    nodePort: 30081
+  type: NodePort
+

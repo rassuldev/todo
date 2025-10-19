@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "github.com/todo/proto/notification";
+
+import "google/protobuf/timestamp.proto";
+
+service NotificationService {
+  rpc SendEmail(SendEmailRequest) returns (SendEmailResponse);
+  rpc SendPushNotification(SendPushNotificationRequest) returns (SendPushNotificationResponse);
+  rpc SendTaskReminder(SendTaskReminderRequest) returns (SendTaskReminderResponse);
+}
+
+message SendEmailRequest {
+  string to = 1;
+  string subject = 2;
+  string body = 3;
+  string from = 4;
+}
+
+message SendEmailResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message SendPushNotificationRequest {
+  string user_id = 1;
+  string title = 2;
+  string body = 3;
+  string device_token = 4;
+}
+
+message SendPushNotificationResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message SendTaskReminderRequest {
+  string user_id = 1;
+  string task_id = 2;
+  string task_title = 3;
+  google.protobuf.Timestamp due_date = 4;
+}
+
+message SendTaskReminderResponse {
+  bool success = 1;
+  string error = 2;
+}
+
